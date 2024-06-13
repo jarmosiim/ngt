@@ -13,8 +13,9 @@ function App() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                console.log(`Fetching products from: ${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`);
-                const response = await fetch(`${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`);
+                const url = `${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
+                console.log(`Fetching products from: ${url}`);
+                const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -44,7 +45,11 @@ function App() {
                 products.map((product) => (
                     <li key={product.id}>
                         <Link to={`/product/${product.id}`}>
-                            <img src={product.images[0].src} alt="Product banner" />
+                            {product.images && product.images[0] ? (
+                                <img src={product.images[0].src} alt="Product banner" />
+                            ) : (
+                                <p>Image not available</p>
+                            )}
                             <h2>{product.name}</h2>
                             <p>Sale price: {product.sale_price}</p>
                             <strong>
