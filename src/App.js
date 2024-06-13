@@ -1,54 +1,46 @@
-import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import './App.css';
 
 function App() {
-	const BASE_URL = process.env.REACT_APP_BASE_URL;
-	const CONSUMER_KEY = process.env.REACT_APP_CONSUMER_KEY;
-	const CONSUMER_SECRET = process.env.REACT_APP_CONSUMER_SECRET;
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-	const [products, setProducts] = useState([]);
-	const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                setProducts(data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                setLoading(false);
+            });
+    }, []);
 
-	useEffect(() => {
-		const fetchProducts = async () => {
-			const response = await fetch(
-				`${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`
-			);
-			const data = await response.json();
-			setProducts(data);
-			setLoading(false);
-		};
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
-		fetchProducts();
-	}, [BASE_URL, CONSUMER_KEY, CONSUMER_SECRET]);
+    if (!products || products.length === 0) {
+        return <div>No products available</div>;
+    }
 
-	return loading ? (
-		<div className="loaderText">
-			<h2>Just a moment. Fetching products...</h2>{' '}
-		</div>
-	) : (
-		<ul>
-			{products ? (
-				products.map((product) => (
-					<li key={product.id}>
-						<Link to={`/product/${product.id}`}>
-							<img src={product.images[0].src} alt="Product banner" />
-							<h2>{product.name}</h2>
-							<p>Sale price: {product.sale_price}</p>
-							<strong>
-								{product.stock_status === 'instock'
-									? 'In stock'
-									: 'Out of stock'}
-							</strong>
-							<button>Add to Cart</button>
-						</Link>
-					</li>
-				))
-			) : (
-				<li>No products found</li>
-			)}
-		</ul>
-	);
+    return (
+        <div className="App">
+            {products.map((product, index) => (
+                <div key={index}>
+                    <h2>{product.name}</h2>
+                    {product.src ? (
+                        <img src={product.src} alt={product.name} />
+                    ) : (
+                        <p>Image not available</p>
+                    )}
+                    <p>{product.description}</p>
+                </div>
+            ))}
+        </div>
+    );
 }
 
 export default App;
