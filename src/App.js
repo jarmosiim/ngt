@@ -1,71 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import './App.css';
+import { useParams } from 'react-router-dom';
 
-function App() {
-    const BASE_URL = process.env.REACT_APP_BASE_URL;
-    const CONSUMER_KEY = process.env.REACT_APP_CONSUMER_KEY;
-    const CONSUMER_SECRET = process.env.REACT_APP_CONSUMER_SECRET;
-
-    const [products, setProducts] = useState([]);
+function ProductDetail() {
+    const { id } = useParams();
+    const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchProduct = async () => {
             try {
-                const url = `${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
-                console.log(`Fetching products from: ${url}`);
+                const BASE_URL = process.env.REACT_APP_BASE_URL;
+                const CONSUMER_KEY = process.env.REACT_APP_CONSUMER_KEY;
+                const CONSUMER_SECRET = process.env.REACT_APP_CONSUMER_SECRET;
+                const url = `${BASE_URL}/${id}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
+                console.log(`Fetching product from: ${url}`);
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setProducts(data);
+                setProduct(data);
             } catch (error) {
-                console.error('Error fetching products:', error);
+                console.error('Error fetching product:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProducts();
-    }, [BASE_URL, CONSUMER_KEY, CONSUMER_SECRET]);
+        fetchProduct();
+    }, [id]);
 
     if (loading) {
-        return (
-            <div className="loaderText">
-                <h2>Just a moment. Fetching products...</h2>
-            </div>
-        );
+        return <div>Loading...</div>;
+    }
+
+    if (!product) {
+        return <div>Product not found</div>;
     }
 
     return (
-        <ul>
-            {products.length > 0 ? (
-                products.map((product) => (
-                    <li key={product.id}>
-                        <Link to={`/product/${product.id}`}>
-                            {product.images && product.images[0] ? (
-                                <img src={product.images[0].src} alt="Product banner" />
-                            ) : (
-                                <p>Image not available</p>
-                            )}
-                            <h2>{product.name}</h2>
-                            <p>Sale price: {product.sale_price}</p>
-                            <strong>
-                                {product.stock_status === 'instock'
-                                    ? 'In stock'
-                                    : 'Out of stock'}
-                            </strong>
-                            <button>Add to Cart</button>
-                        </Link>
-                    </li>
-                ))
+        <div>
+            <h1>{product.name}</h1>
+            {product.images && product.images[0] ? (
+                <img src={product.images[0].src} alt="Product banner" />
             ) : (
-                <li>No products found</li>
+                <p>Image not available</p>
             )}
-        </ul>
+            <p>{product.description}</p>
+            {/* Other product details */}
+        </div>
     );
 }
 
-export default App;
+export default ProductDetail;
