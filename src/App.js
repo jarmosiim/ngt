@@ -1,52 +1,65 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './App.css';
 
 function App() {
+    const BASE_URL = process.env.REACT_APP_BASE_URL;
+    const CONSUMER_KEY = process.env.REACT_APP_CONSUMER_KEY;
+    const CONSUMER_SECRET = process.env.REACT_APP_CONSUMER_SECRET;
+
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const apiUrl = '/api/products'; // Define the API URL
 
     useEffect(() => {
-        console.log(`Fetching products from: ${apiUrl}`);
-        fetch(apiUrl)
-            .then(response => {
+        const fetchProducts = async () => {
+            try {
+                console.log(`Fetching products from: ${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`);
+                const response = await fetch(`${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.json();
-            })
-            .then(data => {
+                const data = await response.json();
                 setProducts(data);
-                setLoading(false);
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error fetching products:', error);
+            } finally {
                 setLoading(false);
-            });
-    }, [apiUrl]);
+            }
+        };
+
+        fetchProducts();
+    }, [BASE_URL, CONSUMER_KEY, CONSUMER_SECRET]);
 
     if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!products || products.length === 0) {
-        return <div>No products available</div>;
+        return (
+            <div className="loaderText">
+                <h2>Just a moment. Fetching products...</h2>
+            </div>
+        );
     }
 
     return (
-        <div className="App">
-            {products.map((product, index) => (
-                <div key={index}>
-                    <h2>{product.name}</h2>
-                    {product.src ? (
-                        <img src={product.src} alt={product.name} />
-                    ) : (
-                        <p>Image not available</p>
-                    )}
-                    <p>{product.description}</p>
-                </div>
-            ))}
-        </div>
+        <ul>
+            {products.length > 0 ? (
+                products.map((product) => (
+                    <li key={product.id}>
+                        <Link to={`/product/${product.id}`}>
+                            <img src={product.images[0].src} alt="Product banner" />
+                            <h2>{product.name}</h2>
+                            <p>Sale price: {product.sale_price}</p>
+                            <strong>
+                                {product.stock_status === 'instock'
+                                    ? 'In stock'
+                                    : 'Out of stock'}
+                            </strong>
+                            <button>Add to Cart</button>
+                        </Link>
+                    </li>
+                ))
+            ) : (
+                <li>No products found</li>
+            )}
+        </ul>
     );
 }
 
