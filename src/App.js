@@ -4,9 +4,11 @@ import './App.css';
 function App() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const apiUrl = '/api/products'; // Define the API URL
 
     useEffect(() => {
-        fetch('/api/products')
+        console.log(`Fetching products from: ${apiUrl}`);
+        fetch(apiUrl)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -21,7 +23,7 @@ function App() {
                 console.error('Error fetching products:', error);
                 setLoading(false);
             });
-    }, []);
+    }, [apiUrl]);
 
     if (loading) {
         return <div>Loading...</div>;
