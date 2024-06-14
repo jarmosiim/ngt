@@ -12,7 +12,7 @@ function ProductDetail() {
                 const BASE_URL = process.env.REACT_APP_BASE_URL;
                 const CONSUMER_KEY = process.env.REACT_APP_CONSUMER_KEY;
                 const CONSUMER_SECRET = process.env.REACT_APP_CONSUMER_SECRET;
-                const url = `${BASE_URL}/${id}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
+                const url = `${BASE_URL}/?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
                 console.log(`Fetching product from: ${url}`);
                 const response = await fetch(url);
                 if (!response.ok) {
