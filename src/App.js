@@ -41,7 +41,7 @@ function ProductDetail() {
     return (
         <div>
             <h1>{product.name}</h1>
-            {product.images && product.images[0] ? (
+            {product.images && product.images.length > 0 && product.images[0].src ? (
                 <img src={product.images[0].src} alt="Product banner" />
             ) : (
                 <p>Image not available</p>
