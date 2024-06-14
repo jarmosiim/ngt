@@ -1,58 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import './App.css';
 
-function ProductDetail() {
-    const { id } = useParams();
-    const [product, setProduct] = useState(null);
+function App() {
+    const BASE_URL = process.env.REACT_APP_BASE_URL;
+    const CONSUMER_KEY = process.env.REACT_APP_CONSUMER_KEY;
+    const CONSUMER_SECRET = process.env.REACT_APP_CONSUMER_SECRET;
+
+    const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProduct = async () => {
+        const fetchProducts = async () => {
             try {
-                if (!id) {
-                    throw new Error('Product ID is undefined');
-                }
-                const BASE_URL = process.env.REACT_APP_BASE_URL;
-                const CONSUMER_KEY = process.env.REACT_APP_CONSUMER_KEY;
-                const CONSUMER_SECRET = process.env.REACT_APP_CONSUMER_SECRET;
-                const url = `${BASE_URL}/${id}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
-                console.log(`Fetching product from: ${url}`);
+                const url = `${BASE_URL}?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
+                console.log(`Fetching products from: ${url}`);
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setProduct(data);
+                setProducts(data);
             } catch (error) {
-                console.error('Error fetching product:', error);
+                console.error('Error fetching products:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProduct();
-    }, [id]);
+        fetchProducts();
+    }, [BASE_URL, CONSUMER_KEY, CONSUMER_SECRET]);
 
     if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!product) {
-        return <div>Product not found</div>;
+        return (
+            <div className="loaderText">
+                <h2>Just a moment. Fetching products...</h2>
+            </div>
+        );
     }
 
     return (
-        <div>
-            <h1>{product.name}</h1>
-            {product.images && product.images.length > 0 && product.images[0].src ? (
-                <img src={product.images[0].src} alt="Product banner" />
+        <ul>
+            {products.length > 0 ? (
+                products.map((product) => (
+                    <li key={product.id}>
+                        <Link to={`/product/${product.id}`}>
+                            {product.images && product.images[0] ? (
+                                <img src={product.images[0].src} alt="Product banner" />
+                            ) : (
+                                <p>Image not available</p>
+                            )}
+                            <h2>{product.name}</h2>
+                            <p>Sale price: {product.sale_price}</p>
+                            <strong>
+                                {product.stock_status === 'instock'
+                                    ? 'In stock'
+                                    : 'Out of stock'}
+                            </strong>
+                            <button>Add to Cart</button>
+                        </Link>
+                    </li>
+                ))
             ) : (
-                <p>Image not available</p>
+                <li>No products found</li>
             )}
-            <p>{product.description}</p>
-            {/* Other product details */}
-        </div>
+        </ul>
     );
 }
 
-export default ProductDetail;
+export default App;
